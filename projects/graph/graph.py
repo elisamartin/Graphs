@@ -84,18 +84,42 @@ class Graph:
         """
         if visited is None:
             visited = set()
+        print(starting_vertex)
         visited.add(starting_vertex)
         for neighbor in self.vertices[starting_vertex]:
             if neighbor not in visited:
                 self.dft_recursive(neighbor, visited)
-                print(visited)
+                
 
     def bfs(self, starting_vertex, destination_vertex):
         """
-        Return a list containing the shortest path from
+        Return a list containing a path from
         starting_vertex to destination_vertex in
-        breath-first order.
+        depth-first order.
         """
+        q = Queue()
+        q.enqueue([starting_vertex])
+        # Create a Set to store the visited nodes
+        visited = set()
+        # While the queue is not empty
+        while q.size() > 0:
+            # Dequeue the first node
+            path = q.dequeue()  # TODO rework for path
+            v = path[-1]
+            # if the current node has not been visited
+            if v not in visited:
+                # TODO rework for path
+                if v == destination_vertex:
+                    return path
+                # mark as visited. print v and add v to visited set
+                visited.add(v)
+                # then add all of it's neighbours to the back of the queue
+                for next_node in self.vertices[v]:
+                    new_path = path.copy()
+                    new_path.append(next_node)
+                    print(f"{v} - {new_path}")
+                    q.enqueue(new_path)
+        return None
 
     def dfs(self, starting_vertex, destination_vertex):
         """
