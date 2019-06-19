@@ -1,4 +1,20 @@
+import random
 
+class Queue():
+    def __init__(self):
+        self.queue = []
+
+    def enqueue(self, value):
+        self.queue.append(value)
+
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+
+    def size(self):
+        return len(self.queue)
 
 class User:
     def __init__(self, name):
@@ -47,8 +63,33 @@ class SocialGraph:
         # !!!! IMPLEMENT ME
 
         # Add users
+        for index in range(0, numUsers):
+            self.addUser(f'User {index}')
 
         # Create friendships
+        # generate all possible friendship combinations
+        # create empty possibleFriendships list
+
+        # Avoid duplicates by ensuring the first number is smaller than the second one
+        # loop over useID's in the self.users
+            # loop over friendID's in a range fron userID + 1, to lastID
+                #append a tuple of (userID, friendID) to the possibleFriendships list
+        possibleFriendships = []
+        for userID in self.users:
+            for friendID in range(userID + 1, self.lastID + 1):
+                possibleFriendships.append((userID, friendID))
+
+        # shufffle possible friendships
+        random.shuffle(possibleFriendships)
+        # create friendships for the first x pair of the list
+        # x is determined by the formula: munUsers * averageFriendships // 2
+        # Needed to divide by 2 since each addFriendship() creates 2 friendships
+        # loop over a range of munUsers * averageFriendships // 2 ...
+            # set friendship to possibleFriendships at the index
+            # addFriendship using a tuple of (friendship[0], friendship[1]) 
+        for i in range(numUsers * (avgFriendships // 2)):
+            friendships = possibleFriendships[i]
+            self.addFriendship(friendships[0], friendships[1])
 
     def getAllSocialPaths(self, userID):
         """
@@ -61,6 +102,18 @@ class SocialGraph:
         """
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
+        queue = Queue()
+        queue.enqueue([userID])
+
+        while queue.size() > 0:
+            path = queue.dequeue()
+            friendID = path[-1]
+            if friendID not in visited:
+                visited[friendID] = path
+                for next_friendID in self.friendships[friendID]:
+                    new_path = path + [next_friendID]
+                    queue.enqueue(new_path)
+
         return visited
 
 
