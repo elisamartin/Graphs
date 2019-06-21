@@ -22,9 +22,120 @@ world.printRooms()
 player = Player("Name", world.startingRoom)
 
 # Fill this out
-traversalPath = []
+traversalPath = ['n', 's']
+graph = {0: {"n": "?", "e": "?", "s": "?", "w": "?"}}
 
 
+class Queue():
+    def __init__(self):
+        self.queue = []
+
+    def enqueue(self, value):
+        self.queue.append(value)
+
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+
+    def size(self):
+        return len(self.queue)
+
+
+"""--------------------------------------------------"""
+
+def opposite_direction(direction):
+    if direction == "n":
+        return "s"
+    elif direction == "s":
+        return "n"
+    elif direction == "w":
+        return "e"
+    elif direction == "e":
+        return "w"
+
+
+
+def bft(graph, starting_room):
+    # declare queue, path, visited
+    q = Queue()
+    visited = set()  
+    pathToTraverse = []
+    # enqueue current (starting) room
+    q.enqueue([starting_room])
+
+    while q.size() > 0:
+        path = q.dequeue()
+        current_room = path[-1]
+        if current_room not in visited:
+            visited.add(current_room)
+            for room in graph[current_room]:
+                if graph[current_room][room] == "?":
+                    return path
+            for room_exit in graph[current_room]:
+                pathToTraverse.append(room_exit)
+                next_room = graph[current_room][room_exit]
+                path_copy = path.copy()
+                path_copy.append(next_room)
+                q.enqueue(path_copy)
+
+
+def findPath():
+    # While len graph is smaller than len rooms
+    while len(graph) < len(roomGraph):
+        # Find current room
+        currentRoomID = player.currentRoom.id
+        # If current room is not on the graph
+        if currentRoomID not in graph:
+            # Add room
+            graph[currentRoomID] = {}
+            # Find exits for current room and add them to graph
+            for exit in player.currentRoom.getExits():
+                # Set all exit values to '?' -> {"n": "?", "e": "?", "s": "?", "w": "?"}
+                graph[currentRoomID][exit] = "?"
+        # for every possible exit         
+        for path in graph[currentRoomID]:
+            # Note: Addded this later
+            # If any of the directions is not in graph, skip it
+            if path not in graph[currentRoomID]:
+                break
+            # if there's an unexplored exit ->
+            if graph[currentRoomID][path] == "?":
+                #create new path from original path
+                exit_path = path
+                # if new path exists
+                if exit_path is not None:
+                    # add new path to traversalPath
+                    traversalPath.append(exit_path)
+                    # make player move in that direction
+                    player.travel(exit_path)
+                    # check if new current room is in graph
+                    new_roomID = player.currentRoom.id
+                    # if new current room not in graph
+                    # Note: Repiting code
+                    if new_roomID not in graph:
+                        # Add new current room to graph
+                        graph[new_roomID] = {}
+                        # Add every possible exits for current room to path
+                        for exit in player.currentRoom.getExits():
+                            graph[player.currentRoom.id][exit] = "?"
+                # Change the graph to add rooms id in the correct direction to graph
+                graph[currentRoomID][exit_path] = new_roomID
+                graph[new_roomID][opposite_direction(exit_path)] = currentRoomID
+                # Update current room
+                currentRoomID = new_roomID
+        # When path in graph finish -> bft to add to traversal path directions, returns path for rooms with exits as "?"
+        paths = bft(graph, currentRoomID)
+        # Add directions to the rooms to traversalPath
+        if paths is not None:
+            for room_number in paths:
+                for room in graph[currentRoomID]:
+                    if graph[currentRoomID][room] == room_number:
+                        traversalPath.append(room)
+                        player.travel(room)
+
+findPath()
 
 # TRAVERSAL TEST
 visited_rooms = set()
